@@ -6,7 +6,7 @@
 
 <img src="./Images/Ink Canvas Artistry.png" style="width:96px;"/>
 
-# Ink Canvas Pro (ICX)
+# Ink Canvas Pro
 [![UPSTREAM](https://img.shields.io/badge/UpStream-InkCanvas%2FInk--Canvas--Artistry-red.svg "LICENSE")](https://github.com/InkCanvas/Ink-Canvas-Artistry)
 [![LICENSE](https://img.shields.io/badge/License-GPL--3.0-red.svg "LICENSE")](./LICENSE)
 [![Latest release](https://img.shields.io/github/release/ShihaoShen2025/Ink-Canvas-Pro.svg?style=shield)](https://github.com/InkCanvas/Ink-Canvas-Artistry/releases/latest)
@@ -19,6 +19,8 @@
 </div>
 
 ## 👀 前言
+本软件（Ink Canvas Pro，简称ICX）是对ICA的轻度优化，解决了在希沃七代机的Win11上使用该软件会出现的问题。
+
 使用和分发本软件前，请您应当且务必知晓相关开源协议，本软件基于 https://github.com/InkCanvas/Ink-Canvas-Artistry 修改而成，而ICA本软件基于 https://github.com/WXRIW/Ink-Canvas 修改而成。对于墨迹功能的相关 issue 提出，可以优先查阅 https://github.com/WXRIW/Ink-Canvas/issues 。
 
 [直接下载](https://github.com/ShihaoShen2025/Ink-Canvas-Pro/releases/latest "Latest Releases")
