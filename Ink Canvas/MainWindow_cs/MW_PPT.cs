@@ -92,10 +92,18 @@ namespace Ink_Canvas
             if (IsShowingRestoreHiddenSlidesWindow) return;
             try
             {
-                if (!isWPSSupportOn && Process.GetProcessesByName("wpp").Length > 0)
+                Process[] processes = Process.GetProcessesByName("wpp");
+                if (processes.Length > 0 && !isWPSSupportOn)
                 {
                     return;
                 }
+
+                //使用下方提前创建 PowerPoint 实例，将导致 PowerPoint 不再有启动界面
+                //pptApplication = (Microsoft.Office.Interop.PowerPoint.Application)Activator.CreateInstance(Marshal.GetTypeFromCLSID(new Guid("91493441-5A91-11CF-8700-00AA0060263B")));
+                //new ComAwareEventInfo(typeof(EApplication_Event), "SlideShowBegin").AddEventHandler(pptApplication, new EApplication_SlideShowBeginEventHandler(this.PptApplication_SlideShowBegin));
+                //new ComAwareEventInfo(typeof(EApplication_Event), "SlideShowEnd").AddEventHandler(pptApplication, new EApplication_SlideShowEndEventHandler(this.PptApplication_SlideShowEnd));
+                //new ComAwareEventInfo(typeof(EApplication_Event), "SlideShowNextSlide").AddEventHandler(pptApplication, new EApplication_SlideShowNextSlideEventHandler(this.PptApplication_SlideShowNextSlide));
+                //ConfigHelper.Instance.IsInitApplicationSuccessful = true;
 
                 pptApplication = (Microsoft.Office.Interop.PowerPoint.Application)Marshal.GetActiveObject("PowerPoint.Application");
 
@@ -263,9 +271,10 @@ namespace Ink_Canvas
 
         }
 
-        //bool isPresentationHaveBlackSpace = false;
+        bool isPresentationHaveBlackSpace = false;
+
+
         private string pptName = null;
-        int currentShowPosition = -1;
         private void PptApplication_SlideShowBegin(SlideShowWindow Wn)
         {
             if (Settings.Automation.IsAutoFoldInPPTSlideShow && !isFloatingBarFolded)
@@ -284,7 +293,7 @@ namespace Ink_Canvas
                 {
                     ImageBlackboard_Click(null, null);
                 }
-                /*
+
                 //调整颜色
                 double screenRatio = SystemParameters.PrimaryScreenWidth / SystemParameters.PrimaryScreenHeight;
                 if (Math.Abs(screenRatio - 16.0 / 9) <= -0.01)
@@ -298,8 +307,8 @@ namespace Ink_Canvas
                 {
 
                 }
-                */
                 lastDesktopInkColor = 1;
+
 
                 slidescount = Wn.Presentation.Slides.Count;
                 previousSlideID = 0;
@@ -408,7 +417,7 @@ namespace Ink_Canvas
                     Thread.Sleep(100);
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        ViewboxFloatingBarMarginAnimation();
+                        ViewboxFloatingBarMarginAnimation(60);
                     });
                 })).Start();
             });
@@ -438,47 +447,22 @@ namespace Ink_Canvas
                     File.WriteAllText(folderPath + "/Position", previousSlideID.ToString());
                 }
                 catch { }
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    try
-                    {
-                        MemoryStream ms = new MemoryStream();
-                        inkCanvas.Strokes.Save(ms);
-                        ms.Position = 0;
-                        memoryStreams[currentShowPosition] = ms;
-                    }
-                    catch { }
-                });
                 for (int i = 1; i <= Pres.Slides.Count; i++)
                 {
                     if (memoryStreams[i] != null)
                     {
                         try
                         {
-                            string baseFilePath = folderPath + @"\" + i.ToString("0000");
-                            string icartFilePath = baseFilePath + ".icart";
-                            string icstkFilePath = baseFilePath + ".icstk";
-
                             if (memoryStreams[i].Length > 8)
                             {
-                                byte[] srcBuf = new byte[memoryStreams[i].Length];
+                                byte[] srcBuf = new Byte[memoryStreams[i].Length];
                                 int byteLength = memoryStreams[i].Read(srcBuf, 0, srcBuf.Length);
-
-                                if (File.Exists(icartFilePath))
-                                {
-                                    File.WriteAllBytes(icartFilePath, srcBuf);
-                                    LogHelper.WriteLogToFile(string.Format("Saved strokes for Slide {0} as .icart, size={1}, byteLength={2}", i.ToString(), memoryStreams[i].Length, byteLength));
-                                }
-                                else
-                                {
-                                    File.WriteAllBytes(icstkFilePath, srcBuf);
-                                    LogHelper.WriteLogToFile(string.Format("Saved strokes for Slide {0} as .icstk, size={1}, byteLength={2}", i.ToString(), memoryStreams[i].Length, byteLength));
-                                }
+                                File.WriteAllBytes(folderPath + @"\" + i.ToString("0000") + ".icstk", srcBuf);
+                                LogHelper.WriteLogToFile(string.Format("Saved strokes for Slide {0}, size={1}, byteLength={2}", i.ToString(), memoryStreams[i].Length, byteLength));
                             }
                             else
                             {
-                                File.Delete(icartFilePath);
-                                File.Delete(icstkFilePath);
+                                File.Delete(folderPath + @"\" + i.ToString("0000") + ".icstk");
                             }
                         }
                         catch (Exception ex)
@@ -492,7 +476,7 @@ namespace Ink_Canvas
 
             Application.Current.Dispatcher.Invoke(() =>
             {
-                //isPresentationHaveBlackSpace = false;
+                isPresentationHaveBlackSpace = false;
 
                 //BtnPPTSlideShow.Visibility = Visibility.Visible;
                 BtnPPTSlideShowEnd.Visibility = Visibility.Collapsed;
@@ -525,7 +509,7 @@ namespace Ink_Canvas
             });
 
             await Task.Delay(150);
-            ViewboxFloatingBarMarginAnimation();
+            ViewboxFloatingBarMarginAnimation(100);
         }
 
         int previousSlideID = 0;
@@ -556,7 +540,6 @@ namespace Ink_Canvas
                         {
                             inkCanvas.Strokes.Add(new StrokeCollection(memoryStreams[Wn.View.CurrentShowPosition]));
                         }
-                        currentShowPosition = Wn.View.CurrentShowPosition;
                     }
                     catch { }
 
@@ -653,7 +636,7 @@ namespace Ink_Canvas
             if (!isFloatingBarFolded)
             {
                 await Task.Delay(100);
-                ViewboxFloatingBarMarginAnimation();
+                ViewboxFloatingBarMarginAnimation(60);
             }
         }
 
@@ -673,6 +656,18 @@ namespace Ink_Canvas
 
         private async void BtnPPTSlideShowEnd_Click(object sender, RoutedEventArgs e)
         {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                try
+                {
+                    MemoryStream ms = new MemoryStream();
+                    inkCanvas.Strokes.Save(ms);
+                    ms.Position = 0;
+                    memoryStreams[pptApplication.SlideShowWindows[1].View.CurrentShowPosition] = ms;
+                    timeMachine.ClearStrokeHistory();
+                }
+                catch { }
+            });
             new Thread(new ThreadStart(() =>
             {
                 try
@@ -684,7 +679,7 @@ namespace Ink_Canvas
 
             HideSubPanels("cursor");
             await Task.Delay(150);
-            ViewboxFloatingBarMarginAnimation();
+            ViewboxFloatingBarMarginAnimation(100);
         }
 
         private void GridPPTControlPrevious_MouseUp(object sender, MouseButtonEventArgs e)

@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Ink;
+using System.Windows.Input;
 using System.Windows.Media;
 using File = System.IO.File;
 using MessageBox = System.Windows.MessageBox;
@@ -48,7 +49,7 @@ namespace Ink_Canvas
             GridInkCanvasSelectionCover.Visibility = Visibility.Collapsed;
 
             ViewboxFloatingBar.Margin = new Thickness((SystemParameters.WorkArea.Width - 284) / 2, SystemParameters.WorkArea.Height - 60, -2000, -200);
-            ViewboxFloatingBarMarginAnimation();
+            ViewboxFloatingBarMarginAnimation(100);
 
             try
             {

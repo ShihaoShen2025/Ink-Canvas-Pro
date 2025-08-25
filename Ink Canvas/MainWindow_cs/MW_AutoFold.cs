@@ -50,7 +50,7 @@ namespace Ink_Canvas
                 PPTNavigationBottomRight.Visibility = Visibility.Collapsed;
                 PPTNavigationSidesLeft.Visibility = Visibility.Collapsed;
                 PPTNavigationSidesRight.Visibility = Visibility.Collapsed;
-                ViewboxFloatingBarMarginAnimation();
+                ViewboxFloatingBarMarginAnimation(-60);
                 HideSubPanels("cursor");
                 SidePannelMarginAnimation(-16);
             });
@@ -94,7 +94,14 @@ namespace Ink_Canvas
                         AnimationsHelper.ShowWithScaleFromRight(PPTNavigationSidesRight);
                     }
                 }
-                ViewboxFloatingBarMarginAnimation();
+                if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                {
+                    ViewboxFloatingBarMarginAnimation(60);
+                }
+                else
+                {
+                    ViewboxFloatingBarMarginAnimation(100);
+                }
                 SidePannelMarginAnimation(-40);
             });
 

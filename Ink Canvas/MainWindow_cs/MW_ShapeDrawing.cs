@@ -1612,25 +1612,14 @@ namespace Ink_Canvas
             }
             lastTempStroke = null;
             lastTempStrokeCollection = null;
-            if (StrokeManipulationHistory?.Count > 0 || ElementsManipulationHistory?.Count > 0)
+            if (StrokeManipulationHistory?.Count > 0)
             {
-                timeMachine.CommitStrokeManipulationHistory(StrokeManipulationHistory, ElementsManipulationHistory);
-                if(StrokeManipulationHistory?.Count > 0)
+                timeMachine.CommitStrokeManipulationHistory(StrokeManipulationHistory);
+                foreach (var item in StrokeManipulationHistory)
                 {
-                    foreach (var item in StrokeManipulationHistory)
-                    {
-                        StrokeInitialHistory[item.Key] = item.Value.Item2;
-                    }
-                    StrokeManipulationHistory = null;
+                    StrokeInitialHistory[item.Key] = item.Value.Item2;
                 }
-                if (ElementsManipulationHistory?.Count > 0)
-                {
-                    foreach (var item in ElementsManipulationHistory)
-                    {
-                        ElementsInitialHistory[item.Key] = item.Value.Item2;
-                    }
-                    ElementsManipulationHistory = null;
-                }
+                StrokeManipulationHistory = null;
             }
             if (DrawingAttributesHistory.Count > 0)
             {

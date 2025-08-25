@@ -16,7 +16,6 @@ using Application = System.Windows.Application;
 using Point = System.Windows.Point;
 using System.Diagnostics;
 using iNKORE.UI.WPF.Modern.Controls;
-using System.Collections.Generic;
 
 namespace Ink_Canvas
 {
@@ -218,8 +217,21 @@ namespace Ink_Canvas
 
                 if (autoAlignCenter) // 控制居中
                 {
-                    await Task.Delay(50);
-                    ViewboxFloatingBarMarginAnimation();
+                    if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                    {
+                        await Task.Delay(50);
+                        ViewboxFloatingBarMarginAnimation(60);
+                    }
+                    else if (Topmost == true) //非黑板
+                    {
+                        await Task.Delay(50);
+                        ViewboxFloatingBarMarginAnimation(100);
+                    }
+                    else //黑板
+                    {
+                        await Task.Delay(50);
+                        ViewboxFloatingBarMarginAnimation(60);
+                    }
                 }
             }
             await Task.Delay(150);
@@ -253,26 +265,19 @@ namespace Ink_Canvas
                 if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
                 {
                     await Task.Delay(100);
-                    ViewboxFloatingBarMarginAnimation();
+                    ViewboxFloatingBarMarginAnimation(60);
                 }
             }
         }
 
         private void SymbolIconDelete_MouseUp(object sender, RoutedEventArgs e)
         {
-            var selectedStrokes = inkCanvas.GetSelectedStrokes();
-            var selectedElements = new List<UIElement>(inkCanvas.GetSelectedElements());
-            if (selectedStrokes.Count > 0 || selectedElements.Count > 0)
+            if (inkCanvas.GetSelectedStrokes().Count > 0)
             {
                 inkCanvas.Strokes.Remove(inkCanvas.GetSelectedStrokes());
-                foreach(UIElement element in selectedElements)
-                {
-                    inkCanvas.Children.Remove(element);
-                    timeMachine.CommitElementInsertHistory(element, true);
-                }
                 GridInkCanvasSelectionCover.Visibility = Visibility.Collapsed;
             }
-            else if (inkCanvas.Strokes.Count > 0 || inkCanvas.Children.Count > 0)
+            else if (inkCanvas.Strokes.Count > 0)
             {
                 if (Settings.Automation.IsAutoSaveStrokesAtClear && inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber)
                 {
@@ -326,7 +331,7 @@ namespace Ink_Canvas
                     Thread.Sleep(100);
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        ViewboxFloatingBarMarginAnimation();
+                        ViewboxFloatingBarMarginAnimation(60);
                     });
                 })).Start();
 
@@ -366,8 +371,28 @@ namespace Ink_Canvas
                     SaveScreenshot(true);
                 }
 
-                ViewboxFloatingBarMarginAnimation();
-
+                if (BtnPPTSlideShowEnd.Visibility == Visibility.Collapsed)
+                {
+                    new Thread(new ThreadStart(() =>
+                    {
+                        Thread.Sleep(100);
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            ViewboxFloatingBarMarginAnimation(100);
+                        });
+                    })).Start();
+                }
+                else
+                {
+                    new Thread(new ThreadStart(() =>
+                    {
+                        Thread.Sleep(100);
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            ViewboxFloatingBarMarginAnimation(60);
+                        });
+                    })).Start();
+                }
                 if (Pen_Icon.Background == null)
                 {
                     PenIcon_Click(null, null);
@@ -538,18 +563,12 @@ namespace Ink_Canvas
 
         bool isViewboxFloatingBarMarginAnimationRunning = false;
 
-        private async void ViewboxFloatingBarMarginAnimation()
+        private async void ViewboxFloatingBarMarginAnimation(int MarginFromEdge)
         {
-            double MarginFromEdge = Settings.Appearance.FloatingBarBottomMargin;
-            if (isFloatingBarFolded)
+            if (MarginFromEdge == 60)
             {
-                MarginFromEdge = -100;
+                MarginFromEdge = 55;
             }
-            else if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
-            {
-                MarginFromEdge = 60;
-            }
-            MarginFromEdge = MarginFromEdge * (Settings.Appearance.FloatingBarScale / 100);
             await Dispatcher.InvokeAsync(() =>
             {
                 if (Topmost == false)
@@ -687,7 +706,15 @@ namespace Ink_Canvas
             {
                 HideSubPanels("cursor", true);
                 await Task.Delay(50);
-                ViewboxFloatingBarMarginAnimation();
+
+                if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                {
+                    ViewboxFloatingBarMarginAnimation(60);
+                }
+                else
+                {
+                    ViewboxFloatingBarMarginAnimation(100);
+                }
             }
         }
 
@@ -695,10 +722,6 @@ namespace Ink_Canvas
         {
             if (Pen_Icon.Background == null || StackPanelCanvasControls.Visibility == Visibility.Collapsed)
             {
-                if (isFloatingBarFolded)
-                {
-                    UnFoldFloatingBar_MouseUp(LeftSidePanel, null);
-                }
                 inkCanvas.EditingMode = InkCanvasEditingMode.Ink;
 
                 Main_Grid.Background = new SolidColorBrush(StringToColor("#01FFFFFF"));

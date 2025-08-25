@@ -31,6 +31,32 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        private void ToggleSwitchIsAutoUpdateWithProxy_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            Settings.Startup.IsAutoUpdateWithProxy = ToggleSwitchIsAutoUpdateWithProxy.IsOn;
+            AutoUpdateWithProxy_Title.Visibility = Settings.Startup.IsAutoUpdateWithProxy ? Visibility.Visible : Visibility.Collapsed;
+            SaveSettingsToFile();
+        }
+
+        private void AutoUpdateProxyTextBox_TextChanged(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            Settings.Startup.AutoUpdateProxy = AutoUpdateProxyTextBox.Text;
+            SaveSettingsToFile();
+        }
+
+        private void BtnResetAutoUpdateProxyToGHProxy_Click(object sender, RoutedEventArgs e)
+        {
+            AutoUpdateProxyTextBox.Text = "https://mirror.ghproxy.com/";
+        }
+
+        private async void BtnCheckAutoUpdateProxyReturnedData_Click(object sender, RoutedEventArgs e)
+        {
+            string ProxyReturnedData = await AutoUpdateHelper.GetRemoteVersion(Settings.Startup.AutoUpdateProxy + "https://raw.githubusercontent.com/InkCanvas/Ink-Canvas-Artistry/master/AutomaticUpdateVersionControl.txt");
+            ShowNotificationAsync(ProxyReturnedData);
+        }
+
         private void AutoUpdateWithSilenceStartTimeComboBox_SelectionChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -148,74 +174,20 @@ namespace Ink_Canvas
             LoadSettings();
         }
 
-        private void ApplyScaling()
-        {
-            // Apply Floating Bar Scale
-            // Divide by 100 to convert percentage to scale factor
-            double floatingBarScaleFactor = Settings.Appearance.FloatingBarScale / 100.0;
-            ViewboxFloatingBarScaleTransform.ScaleX = floatingBarScaleFactor;
-            ViewboxFloatingBarScaleTransform.ScaleY = floatingBarScaleFactor;
-
-            // Apply Blackboard Scale
-            // Divide by 100 to convert percentage to scale factor
-            double blackboardScaleFactor = Settings.Appearance.BlackboardScale / 100.0;
-            ViewboxBlackboardLeftSideScaleTransform.ScaleX = blackboardScaleFactor;
-            ViewboxBlackboardLeftSideScaleTransform.ScaleY = blackboardScaleFactor;
-            ViewboxBlackboardCenterSideScaleTransform.ScaleX = blackboardScaleFactor;
-            ViewboxBlackboardCenterSideScaleTransform.ScaleY = blackboardScaleFactor;
-            ViewboxBlackboardRightSideScaleTransform.ScaleX = blackboardScaleFactor;
-            ViewboxBlackboardRightSideScaleTransform.ScaleY = blackboardScaleFactor;
-
-            // auto align
-            ViewboxFloatingBarMarginAnimation();
-        }
-
-        private void SliderFloatingBarBottomMargin_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void ToggleSwitchEnableViewboxFloatingBarScaleTransform_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
-            Settings.Appearance.FloatingBarBottomMargin = e.NewValue;
-            ViewboxFloatingBarMarginAnimation();
+            Settings.Appearance.EnableViewboxFloatingBarScaleTransform = ToggleSwitchEnableViewboxFloatingBarScaleTransform.IsOn;
             SaveSettingsToFile();
+            LoadSettings();
         }
 
-        private void SliderFloatingBarScale_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void ToggleSwitchEnableViewboxBlackBoardScaleTransform_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
-            Settings.Appearance.FloatingBarScale = e.NewValue;
-            ApplyScaling(); // Apply the change visually
+            Settings.Appearance.EnableViewboxBlackBoardScaleTransform = ToggleSwitchEnableViewboxBlackBoardScaleTransform.IsOn;
             SaveSettingsToFile();
-        }
-
-        private void SliderBlackboardScale_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (!isLoaded) return;
-            Settings.Appearance.BlackboardScale = e.NewValue;
-            ApplyScaling(); // Apply the change visually
-            SaveSettingsToFile();
-        }
-
-        private void BtnSetFloatingBarScale_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.Tag != null && double.TryParse(btn.Tag.ToString(), out double scalePercent))
-            {
-                SliderFloatingBarScale.Value = scalePercent;
-            }
-        }
-
-        private void BtnSetBlackboardScale_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.Tag != null && double.TryParse(btn.Tag.ToString(), out double scalePercent))
-            {
-                SliderBlackboardScale.Value = scalePercent;
-            }
-        }
-
-        private void BtnSetFloatingBarMargin_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.Tag != null && double.TryParse(btn.Tag.ToString(), out double margin))
-            {
-                SliderFloatingBarBottomMargin.Value = margin;
-            }
+            LoadSettings();
         }
 
         private void ToggleSwitchShowButtonPPTNavigationBottom_OnToggled(object sender, RoutedEventArgs e)
@@ -258,18 +230,13 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
-        private void ToggleSwitchCompressPicturesUploaded_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!isLoaded) return;
-            Settings.Canvas.IsCompressPicturesUploaded = ToggleSwitchCompressPicturesUploaded.IsOn;
-            SaveSettingsToFile();
-        }
-
         private void ToggleSwitchShowCursor_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
+
             Settings.Canvas.IsShowCursor = ToggleSwitchShowCursor.IsOn;
             inkCanvas_EditingModeChanged(inkCanvas, null);
+
             SaveSettingsToFile();
         }
 
@@ -554,13 +521,6 @@ namespace Ink_Canvas
 
         #region Gesture
 
-        private void ComboBoxMatrixTransformCenterPoint_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!isLoaded) return;
-            Settings.Gesture.MatrixTransformCenterPoint = (MatrixTransformCenterPointOptions)ComboBoxMatrixTransformCenterPoint.SelectedIndex;
-            SaveSettingsToFile();
-        }
-
         private void ToggleSwitchEnableFingerGestureSlideShowControl_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -670,10 +630,7 @@ namespace Ink_Canvas
             Settings.Advanced.TouchMultiplier = 0.3;
             Settings.Advanced.NibModeBoundsWidth = 5;
             Settings.Advanced.FingerModeBoundsWidth = 20;
-            Settings.Advanced.NibModeBoundsWidthThresholdValue = 2.5;
-            Settings.Advanced.FingerModeBoundsWidthThresholdValue = 2.5;
-            Settings.Advanced.NibModeBoundsWidthEraserSize = 0.8;
-            Settings.Advanced.FingerModeBoundsWidthEraserSize = 0.8;
+            Settings.Advanced.EraserBindTouchMultiplier = true;
             Settings.Advanced.IsLogEnabled = true;
             Settings.Advanced.IsSecondConfimeWhenShutdownApp = false;
             Settings.Advanced.IsEnableEdgeGestureUtil = false;
@@ -681,8 +638,8 @@ namespace Ink_Canvas
             Settings.Appearance.IsEnableDisPlayFloatBarText = false;
             Settings.Appearance.IsEnableDisPlayNibModeToggler = false;
             Settings.Appearance.IsColorfulViewboxFloatingBar = false;
-            Settings.Appearance.FloatingBarScale = 100.0;
-            Settings.Appearance.BlackboardScale = 100.0;
+            Settings.Appearance.EnableViewboxFloatingBarScaleTransform = true;
+            Settings.Appearance.EnableViewboxBlackBoardScaleTransform = false;
             Settings.Appearance.IsTransparentButtonBackground = true;
             Settings.Appearance.IsShowExitButton = true;
             Settings.Appearance.IsShowEraserButton = true;
@@ -738,7 +695,6 @@ namespace Ink_Canvas
             Settings.Canvas.UsingWhiteboard = false;
             Settings.Canvas.HyperbolaAsymptoteOption = 0;
 
-            Settings.Gesture.MatrixTransformCenterPoint = MatrixTransformCenterPointOptions.CanvasCenterPoint;
             Settings.Gesture.AutoSwitchTwoFingerGesture = true;
             Settings.Gesture.IsEnableTwoFingerTranslate = true;
             Settings.Gesture.IsEnableTwoFingerZoom = false;
@@ -750,6 +706,8 @@ namespace Ink_Canvas
             Settings.Startup.IsEnableNibMode = false;
             Settings.Startup.IsAutoUpdate = true;
             Settings.Startup.IsAutoUpdateWithSilence = true;
+            Settings.Startup.IsAutoUpdateWithProxy = true;
+            Settings.Startup.AutoUpdateProxy = "https://mirror.ghproxy.com/";
             Settings.Startup.AutoUpdateWithSilenceStartTime = "18:20";
             Settings.Startup.AutoUpdateWithSilenceEndTime = "07:40";
             Settings.Startup.IsFoldAtStartup = false;
@@ -824,14 +782,39 @@ namespace Ink_Canvas
             double value;
             if (!Settings.Advanced.IsQuadIR) value = args.Width;
             else value = Math.Sqrt(args.Width * args.Height); //四边红外
+
             TextBlockShowCalculatedMultiplier.Text = (5 / (value * 1.1)).ToString();
+        }
+
+        private void ToggleSwitchEraserBindTouchMultiplier_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            Settings.Advanced.EraserBindTouchMultiplier = ToggleSwitchEraserBindTouchMultiplier.IsOn;
+            SaveSettingsToFile();
         }
 
         private void NibModeBoundsWidthSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!isLoaded) return;
             Settings.Advanced.NibModeBoundsWidth = (int)e.NewValue;
-            BoundsWidth = Settings.Startup.IsEnableNibMode ? BoundsWidth = Settings.Advanced.NibModeBoundsWidth : BoundsWidth = Settings.Advanced.FingerModeBoundsWidth;
+
+            if (Settings.Startup.IsEnableNibMode)
+            {
+                BoundsWidth = Settings.Advanced.NibModeBoundsWidth;
+            }
+            else
+            {
+                BoundsWidth = Settings.Advanced.FingerModeBoundsWidth;
+            }
+
+            SaveSettingsToFile();
+        }
+
+        private void ToggleSwitchIsEnableEdgeGestureUtil_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            Settings.Advanced.IsEnableEdgeGestureUtil = ToggleSwitchIsEnableEdgeGestureUtil.IsOn;
+            if (OSVersion.GetOperatingSystem() >= OSVersionExtension.OperatingSystem.Windows10) EdgeGestureUtil.DisableEdgeGestures(new WindowInteropHelper(this).Handle, ToggleSwitchIsEnableEdgeGestureUtil.IsOn);
             SaveSettingsToFile();
         }
 
@@ -839,35 +822,16 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
             Settings.Advanced.FingerModeBoundsWidth = (int)e.NewValue;
-            BoundsWidth = Settings.Startup.IsEnableNibMode ? BoundsWidth = Settings.Advanced.NibModeBoundsWidth : BoundsWidth = Settings.Advanced.FingerModeBoundsWidth;
-            SaveSettingsToFile();
-        }
 
-        private void NibModeBoundsWidthThresholdValueSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (!isLoaded) return;
-            Settings.Advanced.NibModeBoundsWidthThresholdValue = (double)e.NewValue;
-            SaveSettingsToFile();
-        }
+            if (Settings.Startup.IsEnableNibMode)
+            {
+                BoundsWidth = Settings.Advanced.NibModeBoundsWidth;
+            }
+            else
+            {
+                BoundsWidth = Settings.Advanced.FingerModeBoundsWidth;
+            }
 
-        private void FingerModeBoundsWidthThresholdValueSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (!isLoaded) return;
-            Settings.Advanced.FingerModeBoundsWidthThresholdValue = (double)e.NewValue;
-            SaveSettingsToFile();
-        }
-
-        private void NibModeBoundsWidthEraserSizeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (!isLoaded) return;
-            Settings.Advanced.NibModeBoundsWidthEraserSize = (double)e.NewValue;
-            SaveSettingsToFile();
-        }
-
-        private void FingerModeBoundsWidthEraserSizeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (!isLoaded) return;
-            Settings.Advanced.FingerModeBoundsWidthEraserSize = (double)e.NewValue;
             SaveSettingsToFile();
         }
 
@@ -889,14 +853,6 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
             Settings.Advanced.IsSecondConfimeWhenShutdownApp = ToggleSwitchIsSecondConfimeWhenShutdownApp.IsOn;
-            SaveSettingsToFile();
-        }
-
-        private void ToggleSwitchIsEnableEdgeGestureUtil_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!isLoaded) return;
-            Settings.Advanced.IsEnableEdgeGestureUtil = ToggleSwitchIsEnableEdgeGestureUtil.IsOn;
-            if (OSVersion.GetOperatingSystem() >= OSVersionExtension.OperatingSystem.Windows10) EdgeGestureUtil.DisableEdgeGestures(new WindowInteropHelper(this).Handle, ToggleSwitchIsEnableEdgeGestureUtil.IsOn);
             SaveSettingsToFile();
         }
 

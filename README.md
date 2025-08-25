@@ -4,7 +4,7 @@
 [![LOGO](Images/Ink%20Canvas%20Artistry.png?raw=true "LOGO")](# "LOGO")
 -->
 
-<img src="./Images/Ink Canvas Pro.png" style="width:96px;"/>
+<img src="./Images/Ink Canvas Artistry.png" style="width:96px;"/>
 
 # Ink Canvas Pro
 [![UPSTREAM](https://img.shields.io/badge/UpStream-InkCanvas%2FInk--Canvas--Artistry-red.svg "LICENSE")](https://github.com/InkCanvas/Ink-Canvas-Artistry)

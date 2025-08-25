@@ -86,6 +86,9 @@ namespace Ink_Canvas
                     ToggleSwitchIsAutoUpdate.IsOn = true;
                     AutoUpdate();
                 }
+                ToggleSwitchIsAutoUpdateWithProxy.IsOn = Settings.Startup.IsAutoUpdateWithProxy;
+                AutoUpdateWithProxy_Title.Visibility = Settings.Startup.IsAutoUpdateWithProxy ? Visibility.Visible : Visibility.Collapsed;
+                AutoUpdateProxyTextBox.Text = Settings.Startup.AutoUpdateProxy;
                 IsAutoUpdateWithSilenceBlock.Visibility = Settings.Startup.IsAutoUpdate ? Visibility.Visible : Visibility.Collapsed;
                 if (Settings.Startup.IsAutoUpdateWithSilence)
                 {
@@ -176,20 +179,46 @@ namespace Ink_Canvas
                 {
                     ToggleSwitchColorfulViewboxFloatingBar.IsOn = false;
                 }
+                if (Settings.Appearance.EnableViewboxFloatingBarScaleTransform) // 浮动工具栏 UI 缩放 90%
+                {
+                    ViewboxFloatingBarScaleTransform.ScaleX = 0.9;
+                    ViewboxFloatingBarScaleTransform.ScaleY = 0.9;
 
-                SliderFloatingBarScale.Value = Settings.Appearance.FloatingBarScale;
-                SliderBlackboardScale.Value = Settings.Appearance.BlackboardScale;
-                SliderFloatingBarBottomMargin.Value = Settings.Appearance.FloatingBarBottomMargin;
-                ApplyScaling();
+                    ToggleSwitchEnableViewboxFloatingBarScaleTransform.IsOn = true;
+                }
+                else
+                {
+                    ViewboxFloatingBarScaleTransform.ScaleX = 1;
+                    ViewboxFloatingBarScaleTransform.ScaleY = 1;
+
+                    ToggleSwitchEnableViewboxFloatingBarScaleTransform.IsOn = false;
+                }
+                if (Settings.Appearance.EnableViewboxBlackBoardScaleTransform) // 画板 UI 缩放 80%
+                {
+                    ViewboxBlackboardLeftSideScaleTransform.ScaleX = 0.8;
+                    ViewboxBlackboardLeftSideScaleTransform.ScaleY = 0.8;
+                    ViewboxBlackboardCenterSideScaleTransform.ScaleX = 0.8;
+                    ViewboxBlackboardCenterSideScaleTransform.ScaleY = 0.8;
+                    ViewboxBlackboardRightSideScaleTransform.ScaleX = 0.8;
+                    ViewboxBlackboardRightSideScaleTransform.ScaleY = 0.8;
+
+                    ToggleSwitchEnableViewboxBlackBoardScaleTransform.IsOn = true;
+                }
+                else
+                {
+                    ViewboxBlackboardLeftSideScaleTransform.ScaleX = 1;
+                    ViewboxBlackboardLeftSideScaleTransform.ScaleY = 1;
+                    ViewboxBlackboardCenterSideScaleTransform.ScaleX = 1;
+                    ViewboxBlackboardCenterSideScaleTransform.ScaleY = 1;
+                    ViewboxBlackboardRightSideScaleTransform.ScaleX = 1;
+                    ViewboxBlackboardRightSideScaleTransform.ScaleY = 1;
+
+                    ToggleSwitchEnableViewboxBlackBoardScaleTransform.IsOn = false;
+                }
             }
             else
             {
                 Settings.Appearance = new Appearance();
-
-                SliderFloatingBarScale.Value = Settings.Appearance.FloatingBarScale;
-                SliderBlackboardScale.Value = Settings.Appearance.BlackboardScale;
-                SliderFloatingBarBottomMargin.Value = Settings.Appearance.FloatingBarBottomMargin;
-                ApplyScaling();
             }
             // PowerPointSettings
             if (Settings.PowerPointSettings != null)
@@ -293,7 +322,6 @@ namespace Ink_Canvas
             // Gesture
             if (Settings.Gesture != null)
             {
-                ComboBoxMatrixTransformCenterPoint.SelectedIndex = (int)Settings.Gesture.MatrixTransformCenterPoint;
                 if (Settings.Gesture.IsEnableMultiTouchMode)
                 {
                     ToggleSwitchEnableMultiTouchMode.IsOn = true;
@@ -438,10 +466,6 @@ namespace Ink_Canvas
                 TouchMultiplierSlider.Value = Settings.Advanced.TouchMultiplier;
                 FingerModeBoundsWidthSlider.Value = Settings.Advanced.FingerModeBoundsWidth;
                 NibModeBoundsWidthSlider.Value = Settings.Advanced.NibModeBoundsWidth;
-                FingerModeBoundsWidthThresholdValueSlider.Value = Settings.Advanced.FingerModeBoundsWidthThresholdValue;
-                NibModeBoundsWidthThresholdValueSlider.Value = Settings.Advanced.NibModeBoundsWidthThresholdValue;
-                FingerModeBoundsWidthEraserSizeSlider.Value = Settings.Advanced.FingerModeBoundsWidthEraserSize;
-                NibModeBoundsWidthEraserSizeSlider.Value = Settings.Advanced.NibModeBoundsWidthEraserSize;
                 if (Settings.Advanced.IsLogEnabled)
                 {
                     ToggleSwitchIsLogEnabled.IsOn = true;
@@ -457,6 +481,14 @@ namespace Ink_Canvas
                 else
                 {
                     ToggleSwitchIsSecondConfimeWhenShutdownApp.IsOn = false;
+                }
+                if (Settings.Advanced.EraserBindTouchMultiplier)
+                {
+                    ToggleSwitchEraserBindTouchMultiplier.IsOn = true;
+                }
+                else
+                {
+                    ToggleSwitchEraserBindTouchMultiplier.IsOn = false;
                 }
 
                 if (Settings.Advanced.IsSpecialScreen)
@@ -648,7 +680,15 @@ namespace Ink_Canvas
             {
                 Settings.Automation = new Automation();
             }
-            ViewboxFloatingBarMarginAnimation();
+            // auto align
+            if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+            {
+                ViewboxFloatingBarMarginAnimation(60);
+            }
+            else
+            {
+                ViewboxFloatingBarMarginAnimation(100);
+            }
         }
     }
 }

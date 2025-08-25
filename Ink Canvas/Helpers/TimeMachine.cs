@@ -21,16 +21,12 @@ namespace Ink_Canvas.Helpers
 
         public event OnRedoStateChange OnRedoStateChanged;
 
-        private void CheckHistoryIndex()
+        public void CommitStrokeUserInputHistory(StrokeCollection stroke)
         {
             if (_currentIndex + 1 < _currentStrokeHistory.Count)
             {
                 _currentStrokeHistory.RemoveRange(_currentIndex + 1, (_currentStrokeHistory.Count - 1) - _currentIndex);
             }
-        }
-
-        public void CommitStrokeUserInputHistory(StrokeCollection stroke)
-        {
             _currentStrokeHistory.Add(new TimeMachineHistory(stroke, TimeMachineHistoryType.UserInput, false));
             _currentIndex = _currentStrokeHistory.Count - 1;
             NotifyUndoRedoState();
@@ -38,42 +34,62 @@ namespace Ink_Canvas.Helpers
 
         public void CommitStrokeShapeHistory(StrokeCollection strokeToBeReplaced, StrokeCollection generatedStroke)
         {
-            CheckHistoryIndex();
-            _currentStrokeHistory.Add(new TimeMachineHistory(generatedStroke, TimeMachineHistoryType.ShapeRecognition, false, strokeToBeReplaced));
+            if (_currentIndex + 1 < _currentStrokeHistory.Count)
+            {
+                _currentStrokeHistory.RemoveRange(_currentIndex + 1, (_currentStrokeHistory.Count - 1) - _currentIndex);
+            }
+            _currentStrokeHistory.Add(new TimeMachineHistory(generatedStroke,
+                TimeMachineHistoryType.ShapeRecognition,
+                false,
+                strokeToBeReplaced));
             _currentIndex = _currentStrokeHistory.Count - 1;
             NotifyUndoRedoState();
         }
 
-        public void CommitStrokeManipulationHistory(
-            Dictionary<Stroke, Tuple<StylusPointCollection, StylusPointCollection>> stylusPointDictionary,
-            Dictionary<string, Tuple<object, TransformGroup>> ElementsManipulationHistory)
+        public void CommitStrokeManipulationHistory(Dictionary<Stroke, Tuple<StylusPointCollection, StylusPointCollection>> stylusPointDictionary)
         {
-            CheckHistoryIndex();
-            _currentStrokeHistory.Add(new TimeMachineHistory(stylusPointDictionary, ElementsManipulationHistory, TimeMachineHistoryType.Manipulation));
+            if (_currentIndex + 1 < _currentStrokeHistory.Count)
+            {
+                _currentStrokeHistory.RemoveRange(_currentIndex + 1, (_currentStrokeHistory.Count - 1) - _currentIndex);
+            }
+            _currentStrokeHistory.Add(
+                new TimeMachineHistory(stylusPointDictionary,
+                    TimeMachineHistoryType.Manipulation));
             _currentIndex = _currentStrokeHistory.Count - 1;
             NotifyUndoRedoState();
         }
 
         public void CommitStrokeDrawingAttributesHistory(Dictionary<Stroke, Tuple<DrawingAttributes, DrawingAttributes>> drawingAttributes)
         {
-            CheckHistoryIndex();
-            _currentStrokeHistory.Add(new TimeMachineHistory(drawingAttributes, TimeMachineHistoryType.DrawingAttributes));
+            if (_currentIndex + 1 < _currentStrokeHistory.Count)
+            {
+                _currentStrokeHistory.RemoveRange(_currentIndex + 1, (_currentStrokeHistory.Count - 1) - _currentIndex);
+            }
+            _currentStrokeHistory.Add(
+                new TimeMachineHistory(drawingAttributes,
+                    TimeMachineHistoryType.DrawingAttributes));
             _currentIndex = _currentStrokeHistory.Count - 1;
             NotifyUndoRedoState();
         }
 
         public void CommitStrokeEraseHistory(StrokeCollection stroke, StrokeCollection sourceStroke = null)
         {
-            CheckHistoryIndex();
+            if (_currentIndex + 1 < _currentStrokeHistory.Count)
+            {
+                _currentStrokeHistory.RemoveRange(_currentIndex + 1, (_currentStrokeHistory.Count - 1) - _currentIndex);
+            }
             _currentStrokeHistory.Add(new TimeMachineHistory(stroke, TimeMachineHistoryType.Clear, true, sourceStroke));
             _currentIndex = _currentStrokeHistory.Count - 1;
             NotifyUndoRedoState();
         }
 
-        public void CommitElementInsertHistory(UIElement element, bool strokeHasBeenCleared = false)
+        public void CommitImageInsertHistory(UIElement image)
         {
-            CheckHistoryIndex();
-            _currentStrokeHistory.Add(new TimeMachineHistory(element, TimeMachineHistoryType.ElementInsert, strokeHasBeenCleared));
+            if (_currentIndex + 1 < _currentStrokeHistory.Count)
+            {
+                _currentStrokeHistory.RemoveRange(_currentIndex + 1, (_currentStrokeHistory.Count - 1) - _currentIndex);
+            }
+            _currentStrokeHistory.Add(new TimeMachineHistory(image, TimeMachineHistoryType.ImageInsert, false));
             _currentIndex = _currentStrokeHistory.Count - 1;
             NotifyUndoRedoState();
         }
@@ -104,7 +120,10 @@ namespace Ink_Canvas.Helpers
 
         public TimeMachineHistory[] ExportTimeMachineHistory()
         {
-            CheckHistoryIndex();
+            if (_currentIndex + 1 < _currentStrokeHistory.Count)
+            {
+                _currentStrokeHistory.RemoveRange(_currentIndex + 1, (_currentStrokeHistory.Count - 1) - _currentIndex);
+            }
             return _currentStrokeHistory.ToArray();
         }
 
@@ -130,10 +149,10 @@ namespace Ink_Canvas.Helpers
         public bool StrokeHasBeenCleared = false;
         public StrokeCollection CurrentStroke;
         public StrokeCollection ReplacedStroke;
-        public UIElement Element;
+        public UIElement ImageElement;
+        public Transform ImageTransform;
         //这里说一下 Tuple 的 Value1 是初始值 ; Value 2 是改变值
         public Dictionary<Stroke, Tuple<StylusPointCollection, StylusPointCollection>> StylusPointDictionary;
-        public Dictionary<string, Tuple<object, TransformGroup>> ElementsManipulationHistory;
         public Dictionary<Stroke, Tuple<DrawingAttributes, DrawingAttributes>> DrawingAttributes;
         // UserInput
         public TimeMachineHistory(StrokeCollection currentStroke, TimeMachineHistoryType commitType, bool strokeHasBeenCleared)
@@ -151,14 +170,10 @@ namespace Ink_Canvas.Helpers
             StrokeHasBeenCleared = strokeHasBeenCleared;
             ReplacedStroke = replacedStroke;
         }
-        // StrokeManipulation, ElementManipulation
-        public TimeMachineHistory(
-            Dictionary<Stroke, Tuple<StylusPointCollection, StylusPointCollection>> stylusPointDictionary,
-            Dictionary<string, Tuple<object, TransformGroup>> elementsManipulationHistory,
-            TimeMachineHistoryType commitType)
+        // StrokeManipulation
+        public TimeMachineHistory(Dictionary<Stroke, Tuple<StylusPointCollection, StylusPointCollection>> stylusPointDictionary, TimeMachineHistoryType commitType)
         {
             CommitType = commitType;
-            ElementsManipulationHistory = elementsManipulationHistory;
             StylusPointDictionary = stylusPointDictionary;
         }
         // trokeDrawingAttributes
@@ -167,11 +182,11 @@ namespace Ink_Canvas.Helpers
             CommitType = commitType;
             DrawingAttributes = drawingAttributes;
         }
-        // Insert UIElement
-        public TimeMachineHistory(UIElement element, TimeMachineHistoryType commitType, bool strokeHasBeenCleared)
+        // Insert Image
+        public TimeMachineHistory(UIElement imageElement, TimeMachineHistoryType commitType, bool strokeHasBeenCleared)
         {
             CommitType = commitType;
-            Element = element;
+            ImageElement = imageElement;
             StrokeHasBeenCleared = strokeHasBeenCleared;
         }
     }
@@ -183,6 +198,6 @@ namespace Ink_Canvas.Helpers
         Clear,
         Manipulation,
         DrawingAttributes,
-        ElementInsert
+        ImageInsert
     }
 }

@@ -8,7 +8,6 @@ using System.Windows.Controls;
 using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Xml.Linq;
 using Point = System.Windows.Point;
 
 namespace Ink_Canvas
@@ -28,6 +27,7 @@ namespace Ink_Canvas
                 inkCanvas.TouchDown -= MainWindow_TouchDown;
                 inkCanvas.TouchDown += Main_Grid_TouchDown;
                 inkCanvas.EditingMode = InkCanvasEditingMode.Ink;
+                inkCanvas.Children.Clear();
                 isInMultiTouchMode = false;
             }
             else
@@ -38,6 +38,7 @@ namespace Ink_Canvas
                 inkCanvas.TouchDown += MainWindow_TouchDown;
                 inkCanvas.TouchDown -= Main_Grid_TouchDown;
                 inkCanvas.EditingMode = InkCanvasEditingMode.Ink;
+                inkCanvas.Children.Clear();
                 isInMultiTouchMode = true;
             }
         }
@@ -54,29 +55,38 @@ namespace Ink_Canvas
                 HideSubPanels(); // 书写时自动隐藏二级菜单
             }
 
-            double boundWidth = e.GetTouchPoint(null).Bounds.Width;
+            double boundWidth = e.GetTouchPoint(null).Bounds.Width, eraserMultiplier = 1.0;
+            if (!Settings.Advanced.EraserBindTouchMultiplier && Settings.Advanced.IsSpecialScreen)
+            {
+                eraserMultiplier = 1 / Settings.Advanced.TouchMultiplier;
+            }
+
             if ((Settings.Advanced.TouchMultiplier != 0 || !Settings.Advanced.IsSpecialScreen) //启用特殊屏幕且触摸倍数为 0 时禁用橡皮
-                && (boundWidth > BoundsWidth))
+                && (boundWidth > BoundsWidth * 2.5))
             {
                 if (drawingShapeMode == 0 && forceEraser) return;
-                double EraserThresholdValue = Settings.Startup.IsEnableNibMode ? Settings.Advanced.NibModeBoundsWidthThresholdValue : Settings.Advanced.FingerModeBoundsWidthThresholdValue;
-                if (boundWidth > BoundsWidth * EraserThresholdValue)
+                double k = 1;
+                switch (Settings.Canvas.EraserSize)
                 {
-                    boundWidth *= (Settings.Startup.IsEnableNibMode ? Settings.Advanced.NibModeBoundsWidthEraserSize : Settings.Advanced.FingerModeBoundsWidthEraserSize);
-                    if (Settings.Advanced.IsSpecialScreen) boundWidth *= Settings.Advanced.TouchMultiplier;
-                    inkCanvas.EraserShape = new EllipseStylusShape(boundWidth, boundWidth);
-                    TouchDownPointsList[e.TouchDevice.Id] = InkCanvasEditingMode.EraseByPoint;
-                    inkCanvas.EditingMode = InkCanvasEditingMode.EraseByPoint;
+                    case 0:
+                        k = 0.5;
+                        break;
+                    case 1:
+                        k = 0.8;
+                        break;
+                    case 3:
+                        k = 1.25;
+                        break;
+                    case 4:
+                        k = 1.8;
+                        break;
                 }
-                else
-                {
-                    inkCanvas.EraserShape = new EllipseStylusShape(5, 5);
-                    inkCanvas.EditingMode = InkCanvasEditingMode.EraseByStroke;
-                }
+                inkCanvas.EraserShape = new EllipseStylusShape(boundWidth * k * eraserMultiplier * 0.25, boundWidth * k * eraserMultiplier * 0.25);
+                TouchDownPointsList[e.TouchDevice.Id] = InkCanvasEditingMode.EraseByPoint;
+                inkCanvas.EditingMode = InkCanvasEditingMode.EraseByPoint;
             }
             else
             {
-                inkCanvas.EraserShape = forcePointEraser ? new EllipseStylusShape(50, 50) : new EllipseStylusShape(5, 5);
                 TouchDownPointsList[e.TouchDevice.Id] = InkCanvasEditingMode.None;
                 inkCanvas.EditingMode = InkCanvasEditingMode.None;
             }
@@ -101,17 +111,11 @@ namespace Ink_Canvas
                 }
                 else
                 {
-                    try
-                    {
-                        // 触摸屏 TabletDeviceType.Touch 
-                        inkCanvas.Strokes.Add(GetStrokeVisual(e.StylusDevice.Id).Stroke);
-                        await Task.Delay(5); // 避免渲染墨迹完成前预览墨迹被删除导致墨迹闪烁
-                        inkCanvas.Children.Remove(GetVisualCanvas(e.StylusDevice.Id));
-                        inkCanvas_StrokeCollected(inkCanvas, new InkCanvasStrokeCollectedEventArgs(GetStrokeVisual(e.StylusDevice.Id).Stroke));
-                    }
-                    catch(Exception ex) {
-                        LogHelper.WriteLogToFile(ex.ToString(), LogHelper.LogType.Error);
-                    }
+                    // 触摸屏 TabletDeviceType.Touch 
+                    inkCanvas.Strokes.Add(GetStrokeVisual(e.StylusDevice.Id).Stroke);
+                    await Task.Delay(5); // 避免渲染墨迹完成前预览墨迹被删除导致墨迹闪烁
+                    inkCanvas.Children.Remove(GetVisualCanvas(e.StylusDevice.Id));
+                    inkCanvas_StrokeCollected(inkCanvas, new InkCanvasStrokeCollectedEventArgs(GetStrokeVisual(e.StylusDevice.Id).Stroke));
                 }
             }
             catch (Exception ex)
@@ -125,6 +129,7 @@ namespace Ink_Canvas
                 TouchDownPointsList.Remove(e.StylusDevice.Id);
                 if (StrokeVisualList.Count == 0 || VisualCanvasList.Count == 0 || TouchDownPointsList.Count == 0)
                 {
+                    inkCanvas.Children.Clear();
                     StrokeVisualList.Clear();
                     VisualCanvasList.Clear();
                     TouchDownPointsList.Clear();
@@ -195,6 +200,8 @@ namespace Ink_Canvas
 
         #endregion
 
+
+
         int lastTouchDownTime = 0, lastTouchUpTime = 0;
 
         Point iniP = new Point(0, 0);
@@ -218,18 +225,34 @@ namespace Ink_Canvas
                 MouseTouchMove(iniP);
             }
             inkCanvas.Opacity = 1;
-            double boundsWidth = GetTouchBoundWidth(e);
-            if ((Settings.Advanced.TouchMultiplier != 0 || !Settings.Advanced.IsSpecialScreen) //启用特殊屏幕且触摸倍数为 0 时禁用橡皮
-                && (boundsWidth > BoundsWidth))
+            double boundsWidth = GetTouchBoundWidth(e), eraserMultiplier = 1.0;
+            if (!Settings.Advanced.EraserBindTouchMultiplier && Settings.Advanced.IsSpecialScreen)
+            {
+                eraserMultiplier = 1 / Settings.Advanced.TouchMultiplier;
+            }
+            if (boundsWidth > BoundsWidth)
             {
                 isLastTouchEraser = true;
                 if (drawingShapeMode == 0 && forceEraser) return;
-                double EraserThresholdValue = Settings.Startup.IsEnableNibMode ? Settings.Advanced.NibModeBoundsWidthThresholdValue : Settings.Advanced.FingerModeBoundsWidthThresholdValue;
-                if (boundsWidth > BoundsWidth * EraserThresholdValue)
+                if (boundsWidth > BoundsWidth * 2.5)
                 {
-                    boundsWidth *= (Settings.Startup.IsEnableNibMode ? Settings.Advanced.NibModeBoundsWidthEraserSize : Settings.Advanced.FingerModeBoundsWidthEraserSize);
-                    if (Settings.Advanced.IsSpecialScreen) boundsWidth *= Settings.Advanced.TouchMultiplier;
-                    inkCanvas.EraserShape = new EllipseStylusShape(boundsWidth, boundsWidth);
+                    double k = 1;
+                    switch (Settings.Canvas.EraserSize)
+                    {
+                        case 0:
+                            k = 0.5;
+                            break;
+                        case 1:
+                            k = 0.8;
+                            break;
+                        case 3:
+                            k = 1.25;
+                            break;
+                        case 4:
+                            k = 1.8;
+                            break;
+                    }
+                    inkCanvas.EraserShape = new EllipseStylusShape(boundsWidth * k * eraserMultiplier, boundsWidth * k * eraserMultiplier);
                     inkCanvas.EditingMode = InkCanvasEditingMode.EraseByPoint;
                 }
                 else
@@ -259,14 +282,17 @@ namespace Ink_Canvas
         public double GetTouchBoundWidth(TouchEventArgs e)
         {
             var args = e.GetTouchPoint(null).Bounds;
-            if (!Settings.Advanced.IsQuadIR) return args.Width;
-            else return Math.Sqrt(args.Width * args.Height); //四边红外
+            double value;
+            if (!Settings.Advanced.IsQuadIR) value = args.Width;
+            else value = Math.Sqrt(args.Width * args.Height); //四边红外
+            if (Settings.Advanced.IsSpecialScreen) value *= Settings.Advanced.TouchMultiplier;
+            return value;
         }
 
         //记录触摸设备ID
         private List<int> dec = new List<int>();
         //中心点
-        Point centerPoint;
+        System.Windows.Point centerPoint;
         InkCanvasEditingMode lastInkCanvasEditingMode = InkCanvasEditingMode.Ink;
         bool isSingleFingerDragMode = false;
 
@@ -344,64 +370,90 @@ namespace Ink_Canvas
             if (isInMultiTouchMode || !Settings.Gesture.IsEnableTwoFingerGesture) return;
             if ((dec.Count >= 2 && (Settings.PowerPointSettings.IsEnableTwoFingerGestureInPresentationMode || BtnPPTSlideShowEnd.Visibility != Visibility.Visible)) || isSingleFingerDragMode)
             {
-                Matrix m = new Matrix();
                 ManipulationDelta md = e.DeltaManipulation;
-                // Translation
-                Vector trans = md.Translation;
-                // Rotate, Scale
+                Vector trans = md.Translation;  // 获得位移矢量
+
+                Matrix m = new Matrix();
+
+                if (Settings.Gesture.IsEnableTwoFingerTranslate)
+                    m.Translate(trans.X, trans.Y);  // 移动
+
                 if (Settings.Gesture.IsEnableTwoFingerGestureTranslateOrRotation)
                 {
-                    double rotate = md.Rotation;
-                    Vector scale = md.Scale;
-                    Point center = GetMatrixTransformCenterPoint(e.ManipulationOrigin, e.Source as FrameworkElement);
-                    if (Settings.Gesture.IsEnableTwoFingerZoom)
-                        m.ScaleAt(scale.X, scale.Y, center.X, center.Y);
+                    double rotate = md.Rotation;  // 获得旋转角度
+                    Vector scale = md.Scale;  // 获得缩放倍数
+
+                    // Find center of element and then transform to get current location of center
+                    FrameworkElement fe = e.Source as FrameworkElement;
+                    Point center = new Point(fe.ActualWidth / 2, fe.ActualHeight / 2);
+                    center = m.Transform(center);  // 转换为矩阵缩放和旋转的中心点
+
                     if (Settings.Gesture.IsEnableTwoFingerRotation)
-                        m.RotateAt(rotate, center.X, center.Y);
-                    if (Settings.Gesture.IsEnableTwoFingerTranslate)
-                        m.Translate(trans.X, trans.Y);
-                    // handle Elements
-                    List<UIElement> elements = InkCanvasElementsHelper.GetAllElements(inkCanvas);
-                    foreach (UIElement element in elements)
+                        m.RotateAt(rotate, center.X, center.Y);  // 旋转
+                    if (Settings.Gesture.IsEnableTwoFingerZoom)
+                        m.ScaleAt(scale.X, scale.Y, center.X, center.Y);  // 缩放
+                }
+
+                StrokeCollection strokes = inkCanvas.GetSelectedStrokes();
+                if (strokes.Count != 0)
+                {
+                    foreach (Stroke stroke in strokes)
                     {
-                        if (Settings.Gesture.IsEnableTwoFingerTranslate)
+                        stroke.Transform(m, false);
+
+                        foreach (Circle circle in circles)
                         {
-                            ApplyElementMatrixTransform(element, m);
+                            if (stroke == circle.Stroke)
+                            {
+                                circle.R = GetDistance(circle.Stroke.StylusPoints[0].ToPoint(), circle.Stroke.StylusPoints[circle.Stroke.StylusPoints.Count / 2].ToPoint()) / 2;
+                                circle.Centroid = new Point((circle.Stroke.StylusPoints[0].X + circle.Stroke.StylusPoints[circle.Stroke.StylusPoints.Count / 2].X) / 2,
+                                                            (circle.Stroke.StylusPoints[0].Y + circle.Stroke.StylusPoints[circle.Stroke.StylusPoints.Count / 2].Y) / 2);
+                                break;
+                            }
                         }
-                        else
+
+                        if (Settings.Gesture.IsEnableTwoFingerZoom)
                         {
-                            ApplyElementMatrixTransform(element, m);
+                            try
+                            {
+                                stroke.DrawingAttributes.Width *= md.Scale.X;
+                                stroke.DrawingAttributes.Height *= md.Scale.Y;
+                            }
+                            catch { }
                         }
                     }
                 }
-                // handle strokes
-                if (Settings.Gesture.IsEnableTwoFingerZoom)
-                {
-                    foreach (Stroke stroke in inkCanvas.Strokes)
-                    {
-                        stroke.Transform(m, false);
-                        try
-                        {
-                            stroke.DrawingAttributes.Width *= md.Scale.X;
-                            stroke.DrawingAttributes.Height *= md.Scale.Y;
-                        }
-                        catch { }
-                    };
-                }
                 else
                 {
-                    foreach (Stroke stroke in inkCanvas.Strokes)
+                    if (Settings.Gesture.IsEnableTwoFingerZoom)
                     {
-                        stroke.Transform(m, false);
-                    };
-                }
-                foreach (Circle circle in circles)
-                {
-                    circle.R = GetDistance(circle.Stroke.StylusPoints[0].ToPoint(), circle.Stroke.StylusPoints[circle.Stroke.StylusPoints.Count / 2].ToPoint()) / 2;
-                    circle.Centroid = new Point(
-                        (circle.Stroke.StylusPoints[0].X + circle.Stroke.StylusPoints[circle.Stroke.StylusPoints.Count / 2].X) / 2,
-                        (circle.Stroke.StylusPoints[0].Y + circle.Stroke.StylusPoints[circle.Stroke.StylusPoints.Count / 2].Y) / 2
-                    );
+                        foreach (Stroke stroke in inkCanvas.Strokes)
+                        {
+                            stroke.Transform(m, false);
+                            try
+                            {
+                                stroke.DrawingAttributes.Width *= md.Scale.X;
+                                stroke.DrawingAttributes.Height *= md.Scale.Y;
+                            }
+                            catch { }
+                        };
+                    }
+                    else
+                    {
+                        foreach (Stroke stroke in inkCanvas.Strokes)
+                        {
+                            stroke.Transform(m, false);
+                        };
+                    }
+
+                    foreach (Circle circle in circles)
+                    {
+                        circle.R = GetDistance(circle.Stroke.StylusPoints[0].ToPoint(), circle.Stroke.StylusPoints[circle.Stroke.StylusPoints.Count / 2].ToPoint()) / 2;
+                        circle.Centroid = new Point(
+                            (circle.Stroke.StylusPoints[0].X + circle.Stroke.StylusPoints[circle.Stroke.StylusPoints.Count / 2].X) / 2,
+                            (circle.Stroke.StylusPoints[0].Y + circle.Stroke.StylusPoints[circle.Stroke.StylusPoints.Count / 2].Y) / 2
+                        );
+                    }
                 }
             }
         }

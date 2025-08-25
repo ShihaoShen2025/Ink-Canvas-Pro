@@ -30,8 +30,6 @@ namespace Ink_Canvas
         public double InkWidth { get; set; } = 2.5;
         [JsonProperty("inkAlpha")]
         public int InkAlpha { get; set; } = 140;
-        [JsonProperty("isCompressPicturesUploaded")]
-        public bool IsCompressPicturesUploaded { get; set; } = false;
         [JsonProperty("isShowCursor")]
         public bool IsShowCursor { get; set; } = false;
         [JsonProperty("inkStyle")]
@@ -75,35 +73,30 @@ namespace Ink_Canvas
         public bool IsEnableTwoFingerRotation { get; set; } = false;
         [JsonProperty("isEnableTwoFingerRotationOnSelection")]
         public bool IsEnableTwoFingerRotationOnSelection { get; set; } = false;
-
-        [JsonProperty("matrixTransformCenterPoint")]
-        public MatrixTransformCenterPointOptions MatrixTransformCenterPoint { get; set; } = MatrixTransformCenterPointOptions.CanvasCenterPoint;
-    }
-
-    public enum MatrixTransformCenterPointOptions
-    {
-        CanvasCenterPoint,
-        SelectedElementsCenterPoint,
-        GestureOperationCenterPoint
     }
 
     public class Startup
     {
         [JsonProperty("isAutoUpdate")]
         public bool IsAutoUpdate { get; set; } = true;
-
+        [JsonProperty("isAutoUpdateWithProxy")]
+        public bool IsAutoUpdateWithProxy { get; set; } = false;
+        [JsonProperty("autoUpdateProxy")]
+        public string AutoUpdateProxy { get; set; } = "https://mirror.ghproxy.com/";
         [JsonProperty("isAutoUpdateWithSilence")]
         public bool IsAutoUpdateWithSilence { get; set; } = false;
-
         [JsonProperty("isAutoUpdateWithSilenceStartTime")]
         public string AutoUpdateWithSilenceStartTime { get; set; } = "00:00";
-
         [JsonProperty("isAutoUpdateWithSilenceEndTime")]
         public string AutoUpdateWithSilenceEndTime { get; set; } = "00:00";
 
         [JsonProperty("isEnableNibMode")]
         public bool IsEnableNibMode { get; set; } = false;
-
+        /*
+        [JsonProperty("isAutoHideCanvas")]
+        public bool IsAutoHideCanvas { get; set; } = true;
+        [JsonProperty("isAutoEnterModeFinger")]
+        public bool IsAutoEnterModeFinger { get; set; } = false;*/
         [JsonProperty("isFoldAtStartup")]
         public bool IsFoldAtStartup { get; set; } = false;
     }
@@ -112,37 +105,24 @@ namespace Ink_Canvas
     {
         [JsonProperty("isEnableDisPlayFloatBarText")]
         public bool IsEnableDisPlayFloatBarText { get; set; } = false;
-
         [JsonProperty("isEnableDisPlayNibModeToggler")]
         public bool IsEnableDisPlayNibModeToggler { get; set; } = true;
-
         [JsonProperty("isColorfulViewboxFloatingBar")]
         public bool IsColorfulViewboxFloatingBar { get; set; } = false;
-
         [JsonProperty("enableViewboxFloatingBarScaleTransform")]
-        public double FloatingBarScale { get; set; } = 100.0;
-
+        public bool EnableViewboxFloatingBarScaleTransform { get; set; } = false;
         [JsonProperty("enableViewboxBlackBoardScaleTransform")]
-        public double BlackboardScale { get; set; } = 100.0;
-
-        [JsonProperty("floatingBarBottomMargin")]
-        public double FloatingBarBottomMargin { get; set; } = 100.0;
-
+        public bool EnableViewboxBlackBoardScaleTransform { get; set; } = false;
         [JsonProperty("isTransparentButtonBackground")]
         public bool IsTransparentButtonBackground { get; set; } = true;
-
         [JsonProperty("isShowExitButton")]
         public bool IsShowExitButton { get; set; } = true;
-
         [JsonProperty("isShowEraserButton")]
         public bool IsShowEraserButton { get; set; } = true;
-
         [JsonProperty("isShowHideControlButton")]
         public bool IsShowHideControlButton { get; set; } = false;
-
         [JsonProperty("isShowLRSwitchButton")]
         public bool IsShowLRSwitchButton { get; set; } = false;
-
         [JsonProperty("isShowModeFingerToggleSwitch")]
         public bool IsShowModeFingerToggleSwitch { get; set; } = true;
         [JsonProperty("theme")]
@@ -284,20 +264,11 @@ namespace Ink_Canvas
         [JsonProperty("fingerModeBoundsWidth")]
         public int FingerModeBoundsWidth { get; set; } = 30;
 
-        [JsonProperty("nibModeBoundsWidthThresholdValue")]
-        public double NibModeBoundsWidthThresholdValue { get; set; } = 2.5;
-
-        [JsonProperty("fingerModeBoundsWidthThresholdValue")]
-        public double FingerModeBoundsWidthThresholdValue { get; set; } = 2.5;
-
-        [JsonProperty("nibModeBoundsWidthEraserSize")]
-        public double NibModeBoundsWidthEraserSize { get; set; } = 0.8;
-
-        [JsonProperty("fingerModeBoundsWidthEraserSize")]
-        public double FingerModeBoundsWidthEraserSize { get; set; } = 0.8;
-
         [JsonProperty("isEnableEdgeGestureUtil")]
         public bool IsEnableEdgeGestureUtil { get; set; } = false;
+
+        [JsonProperty("eraserBindTouchMultiplier")]
+        public bool EraserBindTouchMultiplier { get; set; } = false;
 
         [JsonProperty("isLogEnabled")]
         public bool IsLogEnabled { get; set; } = true;
