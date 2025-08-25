@@ -1,4 +1,4 @@
-﻿using Ink_Canvas.Helpers;
+using Ink_Canvas.Helpers;
 using Newtonsoft.Json;
 using OSVersionExtension;
 using System;
@@ -627,9 +627,9 @@ namespace Ink_Canvas
             Settings = new Settings();
             Settings.Advanced.IsSpecialScreen = true;
             Settings.Advanced.IsQuadIR = false;
-            Settings.Advanced.TouchMultiplier = 0.3;
-            Settings.Advanced.NibModeBoundsWidth = 5;
-            Settings.Advanced.FingerModeBoundsWidth = 20;
+            Settings.Advanced.TouchMultiplier = 0.25;
+            Settings.Advanced.NibModeBoundsWidth = 16;
+            Settings.Advanced.FingerModeBoundsWidth = 48;
             Settings.Advanced.EraserBindTouchMultiplier = true;
             Settings.Advanced.IsLogEnabled = true;
             Settings.Advanced.IsSecondConfimeWhenShutdownApp = false;

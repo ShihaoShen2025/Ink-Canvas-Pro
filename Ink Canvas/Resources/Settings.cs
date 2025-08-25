@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Ink_Canvas
 {
@@ -259,10 +259,10 @@ namespace Ink_Canvas
         public double TouchMultiplier { get; set; } = 0.25;
 
         [JsonProperty("nibModeBoundsWidth")]
-        public int NibModeBoundsWidth { get; set; } = 10;
+        public int NibModeBoundsWidth { get; set; } = 16;
 
         [JsonProperty("fingerModeBoundsWidth")]
-        public int FingerModeBoundsWidth { get; set; } = 30;
+        public int FingerModeBoundsWidth { get; set; } = 48;
 
         [JsonProperty("isEnableEdgeGestureUtil")]
         public bool IsEnableEdgeGestureUtil { get; set; } = false;

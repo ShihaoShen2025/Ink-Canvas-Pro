@@ -9,7 +9,8 @@
   <component name="ChangeListManager">
     <list default="true" id="5c66535c-5fa3-4465-8c81-88a949222a51" name="更改" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Ink Canvas/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Ink Canvas/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Ink Canvas/Ink Canvas.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Ink Canvas/Ink Canvas.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Ink Canvas/MainWindow_cs/MW_Settings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Ink Canvas/MainWindow_cs/MW_Settings.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Ink Canvas/Resources/Settings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Ink Canvas/Resources/Settings.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,6 +81,7 @@
       <workItem from="1756112331341" duration="147000" />
       <workItem from="1756112953729" duration="1585000" />
       <workItem from="1756116071202" duration="280000" />
+      <workItem from="1756119524672" duration="596000" />
     </task>
     <servers />
   </component>
