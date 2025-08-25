@@ -4,7 +4,7 @@
 [![LOGO](Images/Ink%20Canvas%20Artistry.png?raw=true "LOGO")](# "LOGO")
 -->
 
-<img src="./Images/Ink Canvas Artistry.png" style="width:96px;"/>
+<img src="./Images/Ink Canvas Pro.png" style="width:96px;"/>
 
 # Ink Canvas Pro
 [![UPSTREAM](https://img.shields.io/badge/UpStream-InkCanvas%2FInk--Canvas--Artistry-red.svg "LICENSE")](https://github.com/InkCanvas/Ink-Canvas-Artistry)
@@ -41,6 +41,11 @@ Support Active Pen (支持压感)
 > 等待是人类的一种智慧
 
 ## 📗 FAQ
+
+### 为什么软件里还是有大量的“ICA”元素？
+因为本项目的目的是成为一个“Better ICA”而非一个独立的项目，故不会进行大规模的品牌修改。
+
+这一点从该项目为ICA的Fork而非独立存储库就可以看出。
 
 ### 点击放映后一翻页就闪退？
 考虑是由于`Microsoft Office`未激活导致的，请自行激活
