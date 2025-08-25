@@ -137,7 +137,7 @@
 		<Resource Include="Resources\DeveloperAvatars\Raspberry-Monster.jpg" />
 		<Resource Include="Resources\DeveloperAvatars\STBBRD.png" />
 		<Resource Include="Resources\DeveloperAvatars\WXRIW.png" />
-		
+        <Resource Include="Resources\DeveloperAvatars\ShihaoShen.png" />
 		<Resource Include="Resources\Ink Canvas Artistry.ico" />
 		<Resource Include="Resources\Segoe Fluent Icons.ttf" />
 		<Resource Include="Resources\Icons-png\check-box-background.png" />
