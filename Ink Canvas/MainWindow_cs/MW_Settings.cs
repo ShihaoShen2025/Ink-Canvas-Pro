@@ -875,13 +875,13 @@ namespace Ink_Canvas
 
         private void HyperlinkSourceToPresentRepository_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start("https://github.com/InkCanvas/Ink-Canvas-Artistry");
+            Process.Start("https://github.com/ShihaoShen2025/Ink-Canvas-Pro");
             HideSubPanels();
         }
 
         private void HyperlinkSourceToOringinalRepository_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start("https://github.com/WXRIW/Ink-Canvas");
+            Process.Start("https://github.com/InkCanvas/Ink-Canvas-Artistry");
             HideSubPanels();
         }
     }

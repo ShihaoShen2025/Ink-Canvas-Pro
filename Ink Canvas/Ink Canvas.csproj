@@ -143,8 +143,8 @@
 		<Resource Include="Resources\Icons-png\check-box-background.png" />
 		<Resource Include="Resources\Icons-png\checked-black.png" />
 		<Resource Include="Resources\Icons-png\checked-white.png" />
-		<Resource Include="Resources\Icons-png\Desmos.png" />
-		<Resource Include="Resources\Icons-png\EasiCamera.png" />
+		<Resource Include="Resources\Icons-png\GeoGebra.png" />
+		<Resource Include="Resources\Icons-png\EasiCare.png" />
 		<Resource Include="Resources\Icons-png\penUpright.png" />
 	</ItemGroup>
 	<ItemGroup>
