@@ -11,6 +11,7 @@
 [![LICENSE](https://img.shields.io/badge/License-GPL--3.0-red.svg "LICENSE")](./LICENSE)
 [![Latest release](https://img.shields.io/github/release/ShihaoShen2025/Ink-Canvas-Pro.svg?style=shield)](https://github.com/InkCanvas/Ink-Canvas-Artistry/releases/latest)
 [![GitHub issues](https://img.shields.io/github/issues/ShihaoShen2025/Ink-Canvas-Pro?logo=github)](https://github.com/InkCanvas/Ink-Canvas-Artistry/issues)
+[![.NET Build](https://github.com/ShihaoShen2025/Ink-Canvas-Pro/actions/workflows/dotnet-desktop.yml/badge.svg)](https://github.com/ShihaoShen2025/Ink-Canvas-Pro/actions/workflows/dotnet-desktop.yml)
 
 ![Screenshot-1](./Images/Screenshot1.png)
 ![Screenshot-2](./Images/Screenshot2.png)
